@@ -34,14 +34,22 @@ async def start_command_handler(message:Message):
 
 @dp.message(Command("show"))
 async def show_command_handler(message:Message):
-    photo_path = "img/shoes/photo_1.jpg"
+    folder_path = "img/shoes"  # Папка с фотографиями
 
-    #Проверка на существование файла
-    if os.path.isfile(photo_path):
-        photo = types.FSInputFile(photo_path)
-        await message.answer_photo(photo,caption="Фото кроссовок")
+    # Получаем список всех файлов в папке
+    image_paths = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(('.jpg', '.jpeg', '.png'))]
+
+
+    if image_paths:
+        # Отправляем каждую фотографию
+        for image_path in image_paths:
+            if os.path.isfile(image_path):
+                photo = types.FSInputFile(image_path)
+                await message.answer_photo(photo, caption=f"Фото {os.path.basename(image_path)}")
+            else:
+                await message.answer(f"Файл {os.path.basename(image_path)} не найден")
     else:
-        await message.answer("Что-то пошло не так,на данный момент фотографии не доступны")  
+        await message.answer("Фотографии не найдены")
 
 
 #Функция для запуска бота
