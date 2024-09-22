@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import Bot,Dispatcher,types
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import Message,InputMediaPhoto
 from config import API_TOKEN
 import os
 
@@ -11,19 +11,6 @@ TOKEN = API_TOKEN
 #Создание обьекта бота
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
-
-
-# Список путей к картинкам
-# image_paths = [
-#     'img/shoes/photo_1.jpg',
-#     'img/shoes/photo_2.jpg',
-#     'img/shoes/photo_3.jpg',
-#     'img/shoes/photo_4.jpg',
-#     'img/shoes/photo_5.jpg',
-#     'img/shoes/photo_6.jpg',
-#     'img/shoes/photo_7.jpg',
-#     'img/shoes/photo_8.jpg'
-# ]
 
 
 #Обработчик команды /start
@@ -39,17 +26,21 @@ async def show_command_handler(message:Message):
     # Получаем список всех файлов в папке
     image_paths = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(('.jpg', '.jpeg', '.png'))]
 
-
     if image_paths:
-        # Отправляем каждую фотографию
+        media_group = []  # Список для хранения фотографий как InputMediaPhoto
+
         for image_path in image_paths:
             if os.path.isfile(image_path):
-                photo = types.FSInputFile(image_path)
-                await message.answer_photo(photo, caption=f"Фото {os.path.basename(image_path)}")
-            else:
-                await message.answer(f"Файл {os.path.basename(image_path)} не найден")
+                media_group.append(InputMediaPhoto(media=types.FSInputFile(image_path)))
+
+            # Если есть фото, отправляем их все в одном сообщении
+        if media_group:
+            await message.answer_media_group(media_group)
+        else:
+            await message.answer("Не удалось загрузить фотографии.")
     else:
         await message.answer("Фотографии не найдены")
+
 
 
 #Функция для запуска бота
